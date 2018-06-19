@@ -32,30 +32,41 @@ class Kmedoids():
 	
 	def assign_to_medoid(self):
 		for i in range(self.n):
-			# dissimilaridade do objeto i com relação ao objeto 
-			dissimilarity = [self.m[i][j] for j in self.medoids]
-			self.data[i][1] = dissimilarity.index(min(dissimilarity))		
+			if i not in self.medoids:
+				# dissimilaridade do objeto i com relação ao objeto 
+				dissimilarity = [self.m[i][j] for j in self.medoids]
+				self.data[i][1] = self.medoids[dissimilarity.index(min(dissimilarity))]
 
 	def update(self):
 		changed = False
 		# Percorre os medoids e verifica se mudar o medoid i por um membro j melhora a solução
 		for i in range(len(self.medoids)):
-			for j in range(self.n):
-				current_cost = self.get_cost()				
-				
-				if self.data[j][1] == self.medoids[i]:
-					medoid_index = copy.copy(self.medoids[i]) #indice do objeto que era medoide
-					object_index = j # indice do objeto que vai virar medoide
-					# Coloca o indice do objeto no lugar do antigo medoide
-					self.medoids[i] = j
-					# Faz com que o objeto que era medoide seja conectado ao novo medoide( Não sei se é preciso)
-					self.data[medoid_index][1] = j
-
-					new_cost = self.get_cost()					
-					if new_cost > current_cost:						
-						self.medoids[i] = medoid_index
-						self.data[object_index][1] == medoid_index
-					else:
-						changed = True
-
+			i_medoid_objects = [j for j in range(self.n) if self.data[j][1] == self.medoids[i]]
+			# Custo atual antes da troca de pares
+			for o in i_medoid_objects:				
+				current_cost = self.get_cost()
+				print(self.medoids)
+				print("Custo corrente: {}".format(current_cost))
+				# Objeto que era medoide
+				old_medoid_obj_index = copy.copy(self.medoids[i])
+				# Objeto que "tentar ser" o novo medoide
+				new_medoid_candidate = copy.copy(o)
+				# Faz a troca de pares
+				# O medoide i, passa a ser novo candidato
+				self.medoids[i] = new_medoid_candidate
+				# O objeto que era medoide é conectado ao medoide novo
+				self.data[old_medoid_obj_index][1] = new_medoid_candidate
+				print("Trocou o medoide {}".format(i))
+				print(self.medoids)
+				new_cost = self.get_cost()
+				print("Novo custo: {}".format(new_cost))
+				if new_cost < current_cost:		
+					changed = True
+				else:
+					print("Desfez a troca do medoide {}".format(i))
+					# O medoid i recebe o objeto que era medoide antes da troca
+					self.medoids[i] = old_medoid_obj_index
+					# O objeto que se tornou medoide na iteração é conectado ao antigo medoide
+					self.data[new_medoid_candidate][1] = old_medoid_obj_index
+					print(self.medoids)				
 		return changed

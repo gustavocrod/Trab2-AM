@@ -51,18 +51,15 @@ def main():
 		data.append([i_object, None])
 		for j in range(n):
 			if i != j:
-				j_object = tweets[j]['text']
-				print(i_object, j_object)
+				j_object = tweets[j]['text']				
 				m[i][j] = levenshtein(i_object, j_object)	
+	
 	# Instancia do Kmedoids
 	km = Kmedoids(data, k, m)
 	km.random_start()
 	km.assign_to_medoid()
 	while km.update():
-		km.assign_to_medoid()
-
-	for medoid in km.medoids:
-		print([d for d in km.data if d[1] == medoid])
-		print("================================================================")
+		km.assign_to_medoid()		
+		
 if __name__ == '__main__':
 	main()
