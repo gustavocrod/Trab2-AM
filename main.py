@@ -35,7 +35,7 @@ def remove_stop_words(tweets):
 
 def main():
 	medoids = list()
-	k = 5
+	k = 2
 
 	# Tweets com algumas normalizações
 	tweets = remove_stop_words(load_tweets())
@@ -49,6 +49,7 @@ def main():
 		i_object = tweets[i]['text']
 		# Insere no vetor de dados o texto e o medoid ao qual o dado texto pertence (inicialmente nenhum)
 		data.append([i_object, None])
+		print(i_object)
 		for j in range(n):
 			if i != j:
 				j_object = tweets[j]['text']				
@@ -58,8 +59,13 @@ def main():
 	km = Kmedoids(data, k, m)
 	km.random_start()
 	km.assign_to_medoid()
+	km.get_cost()
 	while km.update():
-		km.assign_to_medoid()		
+		km.assign_to_medoid()
+	for i in km.medoids:
+		medoid_objects = [j for j in self.data if j[1] == i]		
+		with open('{}.txt', 'w') as f:
+			f.write(' '.join(medoid_objects))
 		
 if __name__ == '__main__':
 	main()
