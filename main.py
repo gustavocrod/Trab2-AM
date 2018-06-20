@@ -8,7 +8,7 @@ from Kmedoids import Kmedoids
 def levenshtein(a,b):
 	return edit_distance(a,b)
 
-# Medida de similaridade baseada em quantos elementos um conjunto compartilha
+# Medida de similaridade baseada em quantos elementos dois conjuntos compartilham
 def jaccard(a,b):	
 	a_words = set(a.split())
 	b_words = set(b.split())	
@@ -35,7 +35,7 @@ def remove_stop_words(tweets):
 
 def main():
 	medoids = list()
-	k = 2
+	k = 5
 
 	# Tweets com algumas normalizações
 	tweets = remove_stop_words(load_tweets())
@@ -63,9 +63,12 @@ def main():
 	while km.update():
 		km.assign_to_medoid()
 	for i in km.medoids:
-		medoid_objects = [j for j in self.data if j[1] == i]		
-		with open('{}.txt', 'w') as f:
-			f.write(' '.join(medoid_objects))
-		
+		for medoid_object_index in [j for j in range(km.n) if km.data[j][1] == i]:
+			print(medoid_object_index)
+			with open('{}.txt'.format(i), 'a') as f:
+				f.write('{} "{}" {}'.format(medoid_object_index, km.data[j][0], i))
+				f.write('\n')
+
+
 if __name__ == '__main__':
 	main()
