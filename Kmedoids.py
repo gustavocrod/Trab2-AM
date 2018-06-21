@@ -12,6 +12,7 @@ class Kmedoids():
 	
 	def get_cost(self):
 		cost = 0
+		print("teste conflito")
 		# Percorre os medoides
 		for i in range(len(self.medoids)):
 			# comentário do satanás pra dar conflito
