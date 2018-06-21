@@ -34,6 +34,7 @@ class Kmedoids():
 	def random_start(self):
 		n = len(self.data)
 		# Selecionar k objetos representativos randomicamente
+		# enquanto não tiver k medoids
 		while len(self.medoids) < self.k:
 			random_medoid = randrange(n)
 			if not random_medoid in self.medoids:
