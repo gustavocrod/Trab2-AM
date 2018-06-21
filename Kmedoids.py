@@ -21,7 +21,8 @@ class Kmedoids():
 					# Se estiver conectado acrescenta ao custo, a disssimilaridade
 					# do objeto j com o medoide i					
 					cost += self.m[i][j]
-		self.cost = cost		
+		self.cost = cost
+		print("teste")		
 
 	def random_start(self):
 		n = len(self.data)
