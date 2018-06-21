@@ -62,12 +62,12 @@ def main():
 	km.get_cost()
 	while km.update():
 		km.assign_to_medoid()
+	
 	for i in km.medoids:
 		for medoid_object_index in [j for j in range(km.n) if km.data[j][1] == i]:
-			print(medoid_object_index)
 			with open('{}.txt'.format(i), 'a') as f:
-				f.write('{} "{}" {}'.format(medoid_object_index, km.data[j][0], i))
-				f.write('\n')
+				f.write('{} {} {}'.format(medoid_object_index, km.data[medoid_object_index][0], i))
+				f.write('\n')			
 
 
 if __name__ == '__main__':

@@ -14,6 +14,10 @@ class Kmedoids():
 		cost = 0
 		# Percorre os medoides
 		for i in range(len(self.medoids)):
+			# comentário do satanás pra dar conflito
+			# comentário do satanás pra dar conflito
+			# comentário do satanás pra dar conflito
+			# comentário do satanás pra dar conflito
 			# percorre os objetos (dados)
 			for j in range(self.n):
 				# verifica se o dado[j] está conectado ao medoide[i]
@@ -21,6 +25,8 @@ class Kmedoids():
 					# Se estiver conectado acrescenta ao custo, a disssimilaridade
 					# do objeto j com o medoide i					
 					cost += self.m[i][j]
+					# comentário do satanás pra dar conflito
+					# comentário do satanás pra dar conflito
 		self.cost = cost		
 
 	def random_start(self):
