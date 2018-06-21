@@ -27,7 +27,8 @@ class Kmedoids():
 					cost += self.m[i][j]
 					# comentário do satanás pra dar conflito
 					# comentário do satanás pra dar conflito
-		self.cost = cost		
+		self.cost = cost
+		print("teste")		
 
 	def random_start(self):
 		n = len(self.data)
