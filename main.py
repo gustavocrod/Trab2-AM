@@ -34,40 +34,9 @@ def remove_stop_words(tweets):
 	return tweets
 
 def main():
-	medoids = list()
-	k = 5
-
 	# Tweets com algumas normalizações
 	tweets = remove_stop_words(load_tweets())
-	# Armazena tweets e a qual medoid eles pertencem
-	data = list()
-	# Tamanho do dataset
-	n = len(tweets)
-	# Matriz de dissimilaridade
-	m = [[0 for i in range(n)] for j in range(n)]	
-	for i in range(n):
-		i_object = tweets[i]['text']
-		# Insere no vetor de dados o texto e o medoid ao qual o dado texto pertence (inicialmente nenhum)
-		data.append([i_object, None])
-		print(i_object)
-		for j in range(n):
-			if i != j:
-				j_object = tweets[j]['text']				
-				m[i][j] = levenshtein(i_object, j_object)	
-	
-	# Instancia do Kmedoids
-	km = Kmedoids(data, k, m)
-	km.random_start()
-	km.assign_to_medoid()
-	km.get_cost()
-	while km.update():
-		km.assign_to_medoid()
-	
-	for i in km.medoids:
-		for medoid_object_index in [j for j in range(km.n) if km.data[j][1] == i]:
-			with open('{}.txt'.format(i), 'a') as f:
-				f.write('{} {} {}'.format(medoid_object_index, km.data[medoid_object_index][0], i))
-				f.write('\n')			
+	# Armazena tweets e a qual medoid eles pertencem	
 
 
 if __name__ == '__main__':
