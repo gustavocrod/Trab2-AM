@@ -72,19 +72,19 @@
 	"buffers":
 	[
 		{
-			"file": "Kmedoids.py",
+			"file": "main.py",
 			"settings":
 			{
-				"buffer_size": 2331,
+				"buffer_size": 1280,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "main.py",
+			"file": "Problem.py",
 			"settings":
 			{
-				"buffer_size": 2101,
+				"buffer_size": 354,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -110,6 +110,18 @@
 		"last_filter": "",
 		"selected_items":
 		[
+			[
+				"push",
+				"Git: Push"
+			],
+			[
+				"commit",
+				"Git: Commit"
+			],
+			[
+				"gitsta",
+				"Git: Status"
+			],
 			[
 				"wrap",
 				"Word Wrap: Toggle"
@@ -187,6 +199,7 @@
 	],
 	"file_history":
 	[
+		"/home/wolganens/Wolgan/Trab2-AM/Kmedoids.py",
 		"/home/wolganens/Wolgan/Trab2-AM/Tweets.json",
 		"/home/wolganens/Wolgan/divcomnumeros/public_html/jogo.html",
 		"/home/wolganens/Wolgan/divcomnumeros/public_html/js/model/Fabrica.class.js",
@@ -373,53 +386,24 @@
 	"groups":
 	[
 		{
-			"selected": 1,
+			"selected": 0,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "Kmedoids.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 2331,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1515,
-								1515
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 510.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
 					"file": "main.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2101,
+						"buffer_size": 1280,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2052,
-								2052
+								616,
+								616
 							]
 						],
 						"settings":
@@ -428,10 +412,39 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 593.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "Problem.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 354,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								322,
+								322
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
@@ -504,7 +517,15 @@
 	{
 		"height": 0.0
 	},
+	"output.git-commit":
+	{
+		"height": 120.0
+	},
 	"output.git-pull":
+	{
+		"height": 120.0
+	},
+	"output.git-push":
 	{
 		"height": 120.0
 	},
@@ -760,7 +781,7 @@
 		[
 			[
 				"",
-				"~/Wolgan/Trab1-IA-2018-01/t1.sublime-workspace"
+				"~/Wolgan/TSP.sublime-project"
 			]
 		],
 		"width": 380.0

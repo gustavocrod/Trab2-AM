@@ -2,7 +2,7 @@ import json
 from nltk.metrics.distance import edit_distance
 from nltk.corpus import stopwords
 import re
-from Kmedoids import Kmedoids
+from Problem import Problem
 
 # Calcula o numero de operações para transformar a em b
 def levenshtein(a,b):
@@ -35,9 +35,20 @@ def remove_stop_words(tweets):
 
 def main():
 	# Tweets com algumas normalizações
-	tweets = remove_stop_words(load_tweets())
-	# Armazena tweets e a qual medoid eles pertencem	
-
+	tweets = remove_stop_words(load_tweets())	
+	# Tamanho do dataset
+	n = len(tweets)
+	# Matriz de dissimilaridade
+	d = [[0 for i in range(n)] for j in range(n)]
+	for i in range(n):
+		i_object = tweets[i]['text']		
+		print(i_object)
+		for j in range(n):
+			if i != j:
+				j_object = tweets[j]['text']				
+				d[i][j] = levenshtein(i_object, j_object)	
+	
+	p = Problem(n, d, 100, 5)
 
 if __name__ == '__main__':
 	main()
