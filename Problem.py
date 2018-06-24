@@ -28,7 +28,8 @@ class Problem(object):
 			self.population.append(i_individual)		
 			self.p_fitness.append(self.fitness(i_individual))
 
-		print(self.p_fitness)
+		# Ordena os individuos da população pelo custo(crescente)
+		self.population = sorted(self.population, key = lambda x: self.fitness(x))		
 	
 	def fitness(self, individual):
 		fitness_value = 0
