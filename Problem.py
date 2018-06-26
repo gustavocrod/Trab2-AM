@@ -78,7 +78,7 @@ class Problem(object):
 
     def crossover(self, parents):
         """
-        Faz o crusamento entre dois individuos, gerando assim
+        Faz o cruzamento entre dois individuos, gerando assim os descendentes
         :param parents: tupla contendo os pais
         :return:
         """
