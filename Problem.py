@@ -50,12 +50,12 @@ class Problem(object):
     """Classe para resolução do problema de clustering de Tweets"""
 
     def __init__(self, n, d, p_size, n_clusters):
-        self.n = n # Número de tweets
+        self.n_tweets = n # Número de tweets
         self.d = d # Matriz de dissimilaridade
         self.p_size = p_size # Tamanho da populacao
         self.population = list() # Lista de individuos/candidato (populacao)
         self.n_clusters = n_clusters # Numero de clusters
-        self.p_fitness = list() # Vetor que armazena        
+        self.p_fitness = list() # Vetor que armazena os custos dos individuos
         self.random_start()
 
     def random_start(self):
@@ -67,15 +67,14 @@ class Problem(object):
 
         '''Matriz len(d) x len(n_clusters) número de tweets X número de clusters'''
         for i in range(self.p_size):
-            i_individual = [[0 for col in range(self.n_clusters)] for row in range(self.n)]
+            i_individual = [[0 for col in range(self.n_clusters)] for row in range(self.n_tweets)]
             '''Define o cluster o individuo i de maneira aleatória'''
-            for j in range(self.n):
+            for j in range(self.n_tweets):
                 i_individual[j][randint(0, self.n_clusters - 1)] = 1
 
             '''Adiciona o individuo na poulação'''
         self.population.append(i_individual)
-        self.p_fitness.append(self.fitness(i_individual))
-        self.sort_population()
+        self.p_fitness.append(self.fitness(i_individual))        
 
     def sort_population(self):
         """
@@ -92,22 +91,31 @@ class Problem(object):
         """
         fitness_value = 0        
         for v in range(self.n_clusters):
-            2pvN = 2 * (sum(individual[s][v] for s in [s for s in range(1, self.n + 1)]) / self.n) * self.n
+            2pvN = 2 * (sum(individual[s][v] for s in [s for s in range(1, self.n_tweets + 1)]) / self.n_tweets) * self.n_tweets
             temp = 0
-            for k in range(self.n):
-                for l in range(self.n):
+            for k in range(self.n_tweets):
+                for l in range(self.n_tweets):
                     temp += (individual[k][v] * individual[l][v] * self.d[k][l])
             fitness_value += temp/2pvN
 
         return fitness_value
 
-    def selection(self):
+    def selection(self, k):
         """
         :param self:
-        :return: uma tupla com as 2 melhores solucoes -- de melhor aptidao (fitness)
+        :return: uma tupla com os indices dos 2 vencedores do torneio
         """
-        parents = (self.population.pop(0), self.population.pop(0)) # seleciona as duas melhores solucoes
-        return parents
+        better = None
+        best = None
+        for i in range(k):
+            candidate_index = randint(0, len(self.population) - 1)
+            candidate_fitness = self.fitness[candidate_index]
+            if better == None or candidate_fitness < self.fitness[better]:
+                second_best = better
+                better = candidate_index
+            self.population.pop(candidate_index)
+
+        return (better, second_best)
 
     def crossover(self, parents):
         """
@@ -124,12 +132,12 @@ class Problem(object):
         """
         pass
 
-    def complete_population(self):
+    def complete_population(self, aux_population):
         """
         verifica e uma populacao esta completa - se ela tem o tamanho correto de cromossomos
         :return: retorna true caso esteja completa. false para contrario
         """
-        if len(self.population) == self.d:
+        if len(aux_population) == self.p_size:
             return True
         return False
 
@@ -141,10 +149,10 @@ class Problem(object):
             mutacao ()
         ate que a populacao esteja completa
         :return:
-        """
-        while not self.complete_population():
+        """        
+        aux_population = list()
+        while not self.complete_population(aux_population):
             parents = self.selection()
-            self.crossover(parents)
-            self.mutation(prob_mutation)
-
-        pass
+            a, b = self.crossover(parents)
+            aux_population.append(a)
+            aux_population.append(b)
