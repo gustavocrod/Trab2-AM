@@ -93,6 +93,7 @@ class Problem(object):
         """
         fitness_value = 0
         for v in range(self.n_clusters):
+            2pvN = 2 * (sum(individual[s][v] for s in [s for s in range(self.n)]) / self.n)
             for k in range(self.n):
                 for l in range(self.n):
                     fitness_value += individual[k][v] * individual[l][v] * self.d[k][l]
