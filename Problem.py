@@ -50,12 +50,12 @@ class Problem(object):
     """Classe para resolução do problema de clustering de Tweets"""
 
     def __init__(self, n, d, p_size, n_clusters):
-        self.n = n # Matriz de dissimilaridade
-        self.d = d # Tamanho da população
-        self.p_size = p_size # Lista de indivíduos
-        self.population = list() # Número de clusters
-        self.n_clusters = n_clusters # Valor do fitness da população
-        self.p_fitness = list()
+        self.n = n # Número de tweets
+        self.d = d # Matriz de dissimilaridade
+        self.p_size = p_size # Tamanho da populacao
+        self.population = list() # Lista de individuos/candidato (populacao)
+        self.n_clusters = n_clusters # Numero de clusters
+        self.p_fitness = list() # Vetor que armazena        
         self.random_start()
 
     def random_start(self):
