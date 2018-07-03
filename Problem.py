@@ -31,12 +31,11 @@ def generic_logarithm():
     # Matriz de dissimilaridade
     d = [[0 for i in range(n)] for j in range(n)]
     for i in range(n):
-        i_object = tweets[i]['text']
-        print(i_object)
+        i_object = tweets[i]['text']        
         for j in range(n):
             if i != j:
                 j_object = tweets[j]['text']
-                d[i][j] = levenshtein(i_object, j_object)
+                d[i][j] = 0.5 * jaccard(i_object, j_object) +  0.5 * levenshtein(i_object, j_object)
 
     p = Problem(n, d, 100, 5)
 
