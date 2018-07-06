@@ -5,3 +5,4 @@ class Individual():
 	def __init__(self, membership_matrix):
 		self.fitness = 0.0 # Aptidao do moco no mundo a fora
 		self.membership_matrix = membership_matrix # membership de cada tweet (n_tweets x n_cluster)
+		self.id = 0

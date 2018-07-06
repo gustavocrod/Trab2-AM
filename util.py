@@ -25,9 +25,22 @@ def jaccard(a,b):
     """
     a_words = set(a.split())
     b_words = set(b.split())
+
+    numerator = 0
+    if a_words > b_words:
+        for a in a_words:
+            for b in b_words:
+                if levenshtein(a, b)/len(a) < 0.2:
+                    numerator += 1
+    else:                
+        for b in b_words:
+            for a in a_words:
+                if levenshtein(b, a)/len(b) < 0.2:
+                    numerator += 1
+
     if a_words.isdisjoint(b_words):
         return 0
-    return 1 - (len(a_words.intersection(b_words)) / (len(a_words) + len(b_words) - len(a_words.intersection(b_words))))
+    return 1 - (numerator / (len(a_words) + len(b_words) - len(a_words.intersection(b_words))))
 
 def load_tweets():
     """

@@ -2,7 +2,8 @@ from random import randint
 from util import *
 from Individual import Individual
 import math
-from copy import copy
+import copy
+cont = 0
 
 def generic_logarithm():
     """
@@ -30,16 +31,20 @@ def generic_logarithm():
         for j in range(n):
             if i != j:
                 j_object = tweets[j]['text']
-                d[i][j] = 0.5 * jaccard(i_object, j_object) +  0.5 * levenshtein(i_object, j_object)
+                d[i][j] = jaccard(i_object, j_object)
     print("Criando instancia do problema")
     p = Problem(n, d, 100, 5)
     print("Inicialização Randomica")
     p.random_start()
-
+    print("================================")
     while p.satisfaction():
         print("Calculo da aptidao")
         p.set_population_fitness()
-        print(p.population[1].fitness)
+        print(
+            [a.fitness for a in list(sorted([i for i in p.population], key=lambda x: x.fitness))]
+        )
+        input()
+        print(p.best_fitness)
         print("Nova populacao")
         p.new_population()
         print(p.iterations)                
@@ -59,7 +64,7 @@ class Problem(object):
         self.best_fitness = float('inf') #Melhor fitness até o momento
 
     def satisfaction(self):
-        return self.iterations < 200
+        return self.iterations < 20
     
     def random_start(self):
         """
@@ -85,10 +90,8 @@ class Problem(object):
         """
         Calcula e armazena o fitness de cada individuo
         :return: none
-        """
+        """                
         iter_best_fitness = self.best_fitness
-
-        print(iter_best_fitness)
 
         for individual in self.population:
             self.fitness(individual)
@@ -100,8 +103,7 @@ class Problem(object):
         # Se depois de calcular o fitness de todos os individuos, o melhor fitness diminuiu, atualizamos ele 
         # e zeramos o contador de iterações
         if iter_best_fitness != self.best_fitness:
-            # Substitui o melhor fitness pelo adquirido nesta iteracao
-            print("Atualizou o melhor fitness, resetando contagem")
+            # Substitui o melhor fitness pelo adquirido nesta iteracao            
             self.best_fitness = iter_best_fitness
             self.iterations = 0
 
@@ -128,18 +130,15 @@ class Problem(object):
     def selection(self, k):
         """
         :param k: Número de individuos participantes do torneio
-        :return: uma tupla com os 2 individuos vencedores do torneio
+        :return: individuo vencedor do torneio
+
+        gera uma lista random com K elementos, ordena eles por fitness, e retorna o de melhor aptidao
         """
-        better = None
-
-        for i in range(k):
-            candidate_index = randint(0, len(self.population) - 1)
-            candidate_fitness = self.population[candidate_index].fitness
-
-            if better == None or candidate_fitness < better.fitness:
-                better = self.population[candidate_index]                
-
-        return better
+        lista = list()
+        lista = [self.population[randint(0, len(self.population) - 1)] for i in range(k)]
+        lista.sort(key=lambda x : x.fitness)        
+        return lista[0]
+        
 
     def crossover(self, parents):
         """
@@ -150,13 +149,13 @@ class Problem(object):
         a, b = parents
         cutt_index = math.ceil(self.n_tweets/2)
         
-        top_a = a.membership_matrix[0:cutt_index]
-        bottom_a = a.membership_matrix[cutt_index:]
+        top_a = copy.deepcopy(a.membership_matrix[0:cutt_index])
+        bottom_a = copy.deepcopy(a.membership_matrix[cutt_index:])
         
-        top_b = b.membership_matrix[0:cutt_index]
-        bottom_b = b.membership_matrix[cutt_index:]
+        top_b = copy.deepcopy(b.membership_matrix[0:cutt_index])
+        bottom_b = copy.deepcopy(b.membership_matrix[cutt_index:])
 
-        return (Individual(top_a + bottom_b), Individual(top_b + bottom_a))
+        return (Individual(top_a + bottom_b), Individual(bottom_a + top_b))
         
 
     def mutation(self, probabilidade):
@@ -185,12 +184,14 @@ class Problem(object):
         aux_population = list()
         
         while not self.complete_population(aux_population):
-            parent_a = self.selection(20) 
-            parent_b = self.selection(20) 
+            parent_a = self.selection(20)
+            parent_b = self.selection(20)            
             a, b = self.crossover((parent_a, parent_b))
             aux_population.append(a)
             aux_population.append(b)
 
-        # Substitui a população antiga pela nova
+        # Substitui a população antiga pela nova        
+        #print(self.population[5].membership_matrix == aux_population[5].membership_matrix)
         self.population = aux_population
+
         self.iterations += 1
