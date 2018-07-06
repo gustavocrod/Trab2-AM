@@ -150,9 +150,7 @@ class Problem(object):
         verifica e uma populacao esta completa - se ela tem o tamanho correto de cromossomos
         :return: retorna true caso esteja completa. false para contrario
         """
-        if len(aux_population) == self.p_size:
-            return True
-        return False
+        return len(aux_population) == self.p_size        
 
     def new_population(self, prob_mutation):
         """
