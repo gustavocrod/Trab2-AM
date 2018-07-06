@@ -2,14 +2,7 @@ from random import randint
 from util import *
 from Individual import Individual
 import math
-
-def satisfaction(problem):
-    """
-    recebe um problema e retorna o quão bom ele esta
-    :param problem:
-    :return: um numero que representa o quao bom o algoritmo esta
-    """
-    pass
+from copy import copy
 
 def generic_logarithm():
     """
@@ -25,7 +18,7 @@ def generic_logarithm():
               Utilize a nova população gerada para a próxima rodada do algoritmo
           retorne a melhor solução da população atual
     """
-
+    print("Carregando tweets")
     # Tweets com algumas normalizações
     tweets = remove_stop_words(load_tweets())
     # Tamanho do dataset
@@ -38,13 +31,17 @@ def generic_logarithm():
             if i != j:
                 j_object = tweets[j]['text']
                 d[i][j] = 0.5 * jaccard(i_object, j_object) +  0.5 * levenshtein(i_object, j_object)
-
+    print("Criando instancia do problema")
     p = Problem(n, d, 100, 5)
+    print("Inicialização Randomica")
     p.random_start()
 
-    while satisfaction(p.population) > 0.3:
+    while p.satisfaction():
+        print("Calculo da aptidao")
         p.set_population_fitness()
+        print("Nova populacao")
         p.new_population()
+        print(p.iterations)
 
 
 
@@ -57,7 +54,12 @@ class Problem(object):
         self.p_size = p_size # Tamanho da populacao
         self.population = list() # Lista de individuos/candidato (populacao)
         self.n_clusters = n_clusters # Numero de clusters         
-
+        self.iterations = 0 #Número de iterações que o algoritmo executou
+        self.best_fitness = float('inf') #Melhor fitness até o momento
+    
+    def satisfaction(self):
+        return self.iterations < 200
+    
     def random_start(self):
         """
         Aleatoriza p solucoes (individuos) para o problema
@@ -83,25 +85,40 @@ class Problem(object):
         Calcula e armazena o fitness de cada individuo
         :return: none
         """
+        iter_best_fitness = self.best_fitness
+
         for individual in self.population:
             self.fitness(individual)
-
+            '''Caso o individuo possua um fitness menor que o melhor atual, salvamos isso para verificar
+            se o fitness mudou para melhor'''
+            if individual.fitness < iter_best_fitness:
+                iter_best_fitness = individual.fitness
+        
+        # Se depois de calcular o fitness de todos os individuos, o melhor fitness diminuiu, atualizamos ele 
+        # e zeramos o contador de iterações
+        if iter_best_fitness != self.best_fitness:
+            # Substitui o melhor fitness pelo adquirido nesta iteracao
+            self.best_fitness = iter_best_fitness
+            self.iterations = 0
     def fitness(self, individual):
         """
         Define a apitidao de cada individuo (solucao)
         :param individual: matriz de tamanho n_tweets x n_clusters
         :return:
         """
-        fitness_value = 0        
+        
+        fitness_value = 0
         for v in range(self.n_clusters):
-            2pvN = 2 * (sum(individual.membership_matrix[s][v] for s in [s for s in range(1, self.n_tweets + 1)]) / self.n_tweets) * self.n_tweets
+            pv = sum(individual.membership_matrix[s][v] for s in [s for s in range(0, self.n_tweets)]) / self.n_tweets
+            pv = pv if pv > 0 else 0.1
+            denominator = 2 * pv * self.n_tweets
             temp = 0
             for k in range(self.n_tweets):
                 for l in range(self.n_tweets):
                     temp += (individual.membership_matrix[k][v] * individual.membership_matrix[l][v] * self.d[k][l])
-            fitness_value += temp/2pvN
-        
-        individual.fitness = fitness_value  
+            fitness_value += temp/denominator        
+       
+        individual.fitness = fitness_value
 
     def selection(self, k):
         """
@@ -109,14 +126,14 @@ class Problem(object):
         :return: uma tupla com os 2 individuos vencedores do torneio
         """
         better = None
-        best = None
+        best = None        
         for i in range(k):
             candidate_index = randint(0, len(self.population) - 1)
             candidate_fitness = self.population[candidate_index].fitness
             if better == None or candidate_fitness < better.fitness:
                 second_best = better
                 better = self.population[candidate_index]
-            self.population.pop(candidate_index)
+                self.population.pop(candidate_index)            
 
         return (better, second_best)
 
@@ -125,7 +142,7 @@ class Problem(object):
         Faz o cruzamento entre dois individuos, gerando assim os descendentes
         :param parents: tupla contendo os pais
         :return:
-        """
+        """        
         a, b = parents
         cutt_index = math.ceil(self.n_tweets/2)
         
@@ -135,7 +152,7 @@ class Problem(object):
         top_b = b.membership_matrix[0:cutt_index]
         bottom_b = b.membership_matrix[cutt_index:]
 
-        return (Individual(top_left + bottom_right), Individual(bottom_left + top_right))
+        return (Individual(top_a + bottom_b), Individual(top_b + bottom_a))
         
 
     def mutation(self, probabilidade):
@@ -152,7 +169,7 @@ class Problem(object):
         """
         return len(aux_population) == self.p_size        
 
-    def new_population(self, prob_mutation):
+    def new_population(self):
         """
         Repete
             seleção_dos_pais ()
@@ -164,9 +181,10 @@ class Problem(object):
         aux_population = list()
         
         while not self.complete_population(aux_population):
-            parents = self.selection()
+            parents = self.selection(20)            
             a, b = self.crossover(parents)
             aux_population.append(a)
             aux_population.append(b)
 
         self.population = aux_population
+        self.iterations += 1
