@@ -132,8 +132,7 @@ class Problem(object):
             candidate_fitness = self.population[candidate_index].fitness
             if better == None or candidate_fitness < better.fitness:
                 second_best = better
-                better = self.population[candidate_index]
-                self.population.pop(candidate_index)            
+                better = self.population[candidate_index]                
 
         return (better, second_best)
 
