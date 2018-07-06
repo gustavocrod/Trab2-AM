@@ -113,7 +113,7 @@ class Problem(object):
         for i in range(k):
             candidate_index = randint(0, len(self.population) - 1)
             candidate_fitness = self.population[candidate_index].fitness
-            if better == None or candidate_fitness < self.population[better].fitness:
+            if better == None or candidate_fitness < better.fitness:
                 second_best = better
                 better = self.population[candidate_index]
             self.population.pop(candidate_index)
@@ -163,7 +163,6 @@ class Problem(object):
         """        
         aux_population = list()
         
-
         while not self.complete_population(aux_population):
             parents = self.selection()
             a, b = self.crossover(parents)
