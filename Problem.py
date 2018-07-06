@@ -39,9 +39,10 @@ def generic_logarithm():
     while p.satisfaction():
         print("Calculo da aptidao")
         p.set_population_fitness()
+        print(p.population[1].fitness)
         print("Nova populacao")
         p.new_population()
-        print(p.iterations)
+        print(p.iterations)                
 
 
 
@@ -56,7 +57,7 @@ class Problem(object):
         self.n_clusters = n_clusters # Numero de clusters         
         self.iterations = 0 #Número de iterações que o algoritmo executou
         self.best_fitness = float('inf') #Melhor fitness até o momento
-    
+
     def satisfaction(self):
         return self.iterations < 200
     
@@ -87,6 +88,8 @@ class Problem(object):
         """
         iter_best_fitness = self.best_fitness
 
+        print(iter_best_fitness)
+
         for individual in self.population:
             self.fitness(individual)
             '''Caso o individuo possua um fitness menor que o melhor atual, salvamos isso para verificar
@@ -98,8 +101,10 @@ class Problem(object):
         # e zeramos o contador de iterações
         if iter_best_fitness != self.best_fitness:
             # Substitui o melhor fitness pelo adquirido nesta iteracao
+            print("Atualizou o melhor fitness, resetando contagem")
             self.best_fitness = iter_best_fitness
             self.iterations = 0
+
     def fitness(self, individual):
         """
         Define a apitidao de cada individuo (solucao)
@@ -107,12 +112,12 @@ class Problem(object):
         :return:
         """
         
-        fitness_value = 0
+        fitness_value = 0.0
         for v in range(self.n_clusters):
             pv = sum(individual.membership_matrix[s][v] for s in [s for s in range(0, self.n_tweets)]) / self.n_tweets
             pv = pv if pv > 0 else 0.1
-            denominator = 2 * pv * self.n_tweets
-            temp = 0
+            denominator = 2.0 * pv * self.n_tweets
+            temp = 0.0
             for k in range(self.n_tweets):
                 for l in range(self.n_tweets):
                     temp += (individual.membership_matrix[k][v] * individual.membership_matrix[l][v] * self.d[k][l])
