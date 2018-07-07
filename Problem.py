@@ -32,22 +32,14 @@ def generic_logarithm():
             if i != j:
                 j_object = tweets[j]['text']
                 d[i][j] = jaccard(i_object, j_object)
-    print("Criando instancia do problema")
-    p = Problem(n, d, 100, 5)
-    print("Inicialização Randomica")
-    p.random_start()
-    print("================================")
-    while p.satisfaction():
-        print("Calculo da aptidao")
-        p.set_population_fitness()
-        print(
-            [a.fitness for a in list(sorted([i for i in p.population], key=lambda x: x.fitness))]
-        )
-        input()
-        print(p.best_fitness)
-        print("Nova populacao")
+    
+    p = Problem(n, d, 100, 5)    
+    p.random_start()    
+    
+    while p.satisfaction(): 
+        p.set_population_fitness()        
         p.new_population()
-        print(p.iterations)                
+
 
 
 
@@ -62,6 +54,7 @@ class Problem(object):
         self.n_clusters = n_clusters # Numero de clusters         
         self.iterations = 0 #Número de iterações que o algoritmo executou
         self.best_fitness = float('inf') #Melhor fitness até o momento
+        self.best_individual = None
 
     def satisfaction(self):
         return self.iterations < 20
@@ -71,8 +64,7 @@ class Problem(object):
         Aleatoriza p solucoes (individuos) para o problema
         (gera a populacao inicial - randomica)
         :return: none
-        """
-
+        """        
         ''' Precisamos criar p_size individuos (ex: 100)'''
         for individual_index in range(self.p_size):
             
@@ -85,6 +77,8 @@ class Problem(object):
 
             '''Adiciona o individuo na poulação'''
             self.population.append(Individual(membership_matrix))
+
+        self.best_individual = self.population[0]
     
     def set_population_fitness(self):
         """
@@ -99,6 +93,7 @@ class Problem(object):
             se o fitness mudou para melhor'''
             if individual.fitness < iter_best_fitness:
                 iter_best_fitness = individual.fitness
+
         
         # Se depois de calcular o fitness de todos os individuos, o melhor fitness diminuiu, atualizamos ele 
         # e zeramos o contador de iterações
@@ -106,6 +101,16 @@ class Problem(object):
             # Substitui o melhor fitness pelo adquirido nesta iteracao            
             self.best_fitness = iter_best_fitness
             self.iterations = 0
+
+        self.sort_population_by_fitness()
+        
+        self.population.pop()
+        self.population.append(self.best_individual)
+
+        self.best_individual = self.population[0]
+    
+    def sort_population_by_fitness(self):
+        self.population.sort(key=lambda x : x.fitness)
 
     def fitness(self, individual):
         """
@@ -116,7 +121,7 @@ class Problem(object):
         
         fitness_value = 0.0
         for v in range(self.n_clusters):
-            pv = sum(individual.membership_matrix[s][v] for s in [s for s in range(0, self.n_tweets)]) / self.n_tweets
+            pv = sum([individual.membership_matrix[s][v] for s in [s for s in range(0, self.n_tweets)]]) / self.n_tweets            
             pv = pv if pv > 0 else 0.1
             denominator = 2.0 * pv * self.n_tweets
             temp = 0.0
@@ -137,6 +142,7 @@ class Problem(object):
         lista = list()
         lista = [self.population[randint(0, len(self.population) - 1)] for i in range(k)]
         lista.sort(key=lambda x : x.fitness)        
+        
         return lista[0]
         
 
@@ -148,14 +154,14 @@ class Problem(object):
         """        
         a, b = parents
         cutt_index = math.ceil(self.n_tweets/2)
-        
+            
         top_a = copy.deepcopy(a.membership_matrix[0:cutt_index])
         bottom_a = copy.deepcopy(a.membership_matrix[cutt_index:])
         
         top_b = copy.deepcopy(b.membership_matrix[0:cutt_index])
         bottom_b = copy.deepcopy(b.membership_matrix[cutt_index:])
-
-        return (Individual(top_a + bottom_b), Individual(bottom_a + top_b))
+        
+        return (Individual(top_a + bottom_b), Individual(top_b + bottom_a ))
         
 
     def mutation(self, probabilidade):
@@ -181,17 +187,20 @@ class Problem(object):
         mutacao ()
         :return:
         """        
-        aux_population = list()
+        aux_population = list()        
+        
+        self.best_individual = self.population[0]
         
         while not self.complete_population(aux_population):
-            parent_a = self.selection(20)
-            parent_b = self.selection(20)            
+            parent_a = self.selection(3)
+            parent_b = self.selection(3)            
             a, b = self.crossover((parent_a, parent_b))
-            aux_population.append(a)
-            aux_population.append(b)
+            #print (a.membership_matrix)
+            #print (b.membership_matrix)
+            aux_population.append(parent_a)
+            aux_population.append(parent_b)
 
         # Substitui a população antiga pela nova        
         #print(self.population[5].membership_matrix == aux_population[5].membership_matrix)
         self.population = aux_population
-
         self.iterations += 1
