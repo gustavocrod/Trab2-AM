@@ -1,14 +1,18 @@
 from random import randint
+from random import sample
+from random import random
 from util import *
 from Individual import Individual
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import pairwise_distances
 import math
+from time import time
 import copy
 cont = 0
 
 def generic_logarithm():
     """
       definicao do algoritmo genetico:
-
           inicia_população () # Gere uma população aleatória de n cromossomas (soluções adequadas para o problema)
           repertir ate satisfeito com a populacao:
               avaliação () # Avalie a adequação f(x) de cada cromossoma x da população
@@ -21,28 +25,37 @@ def generic_logarithm():
     """
     print("Carregando tweets")
     # Tweets com algumas normalizações
-    tweets = remove_stop_words(load_tweets())
+    tweets = [t['text'] for t in remove_stop_words(load_tweets())]
+
+    tfidf_vectorizer = TfidfVectorizer()
+    tfidf_matrix = tfidf_vectorizer.fit_transform(tweets)
+    
+    print("Calculando matriz de dissimilaridade")
+    # Matriz de dissimilaridade    
+    d = pairwise_distances(X=tfidf_matrix, Y=None, n_jobs=-1, metric='cosine')    
     # Tamanho do dataset
     n = len(tweets)
-    # Matriz de dissimilaridade
-    d = [[0 for i in range(n)] for j in range(n)]
-    for i in range(n):
-        i_object = tweets[i]['text']        
-        for j in range(n):
-            if i != j:
-                j_object = tweets[j]['text']
-                d[i][j] = jaccard(i_object, j_object)
+    p = Problem(n, d, 8, 10)
+
+    print("Gerando população aleatória inicial")    
+    p.random_start()
+    p.set_population_fitness()
+    p.best_individual = min(p.population, key=lambda ind: ind.fitness)
     
-    p = Problem(n, d, 100, 5)    
-    p.random_start()    
-    
-    while p.satisfaction(): 
-        p.set_population_fitness()        
+    while p.satisfaction():
         p.new_population()
+        print("\n--------------------------------------------------------")
+        print("Iterações sem mudança no melhor indivíduo: ", p.iterations)        
+        print("Número de gerações: ", p.generation)
+        print("Melhor fitness: ", p.best_individual.fitness)
 
-
-
-
+    for v in range(p.n_clusters):
+        v_tweets_index = [i for i in range(p.n_tweets) if p.best_individual.membership_matrix[i][v] == 1]        
+        v_tweets = [tweets[i] for i in v_tweets_index]
+        with open('{}.txt'.format(v), 'w') as f:
+            f.write('\n'.join(v_tweets))
+            f.write('\n')        
+        
 class Problem(object):
     """Classe para resolução do problema de clustering de Tweets"""
 
@@ -55,9 +68,11 @@ class Problem(object):
         self.iterations = 0 #Número de iterações que o algoritmo executou
         self.best_fitness = float('inf') #Melhor fitness até o momento
         self.best_individual = None
+        self.max_iterations = 200 # Númeoro máximo de iterações SEM MELHORIA na solução
+        self.generation = 0
 
     def satisfaction(self):
-        return self.iterations < 20
+        return self.iterations < self.max_iterations or self.generation == 10000
     
     def random_start(self):
         """
@@ -76,41 +91,17 @@ class Problem(object):
                 membership_matrix[i][randint(0, self.n_clusters - 1)] = 1
 
             '''Adiciona o individuo na poulação'''
-            self.population.append(Individual(membership_matrix))
+            self.population.append(Individual(membership_matrix, self.generation))
 
-        self.best_individual = self.population[0]
-    
     def set_population_fitness(self):
         """
         Calcula e armazena o fitness de cada individuo
         :return: none
-        """                
-        iter_best_fitness = self.best_fitness
-
+        """ 
         for individual in self.population:
-            self.fitness(individual)
+            self.fitness(individual)            
             '''Caso o individuo possua um fitness menor que o melhor atual, salvamos isso para verificar
-            se o fitness mudou para melhor'''
-            if individual.fitness < iter_best_fitness:
-                iter_best_fitness = individual.fitness
-
-        
-        # Se depois de calcular o fitness de todos os individuos, o melhor fitness diminuiu, atualizamos ele 
-        # e zeramos o contador de iterações
-        if iter_best_fitness != self.best_fitness:
-            # Substitui o melhor fitness pelo adquirido nesta iteracao            
-            self.best_fitness = iter_best_fitness
-            self.iterations = 0
-
-        self.sort_population_by_fitness()
-        
-        self.population.pop()
-        self.population.append(self.best_individual)
-
-        self.best_individual = self.population[0]
-    
-    def sort_population_by_fitness(self):
-        self.population.sort(key=lambda x : x.fitness)
+            se o fitness mudou para melhor'''        
 
     def fitness(self, individual):
         """
@@ -118,31 +109,28 @@ class Problem(object):
         :param individual: matriz de tamanho n_tweets x n_clusters
         :return:
         """
-        
         fitness_value = 0.0
         for v in range(self.n_clusters):
-            pv = sum([individual.membership_matrix[s][v] for s in [s for s in range(0, self.n_tweets)]]) / self.n_tweets            
-            pv = pv if pv > 0 else 0.1
+            pv = sum([individual.membership_matrix[s][v] for s in [s for s in range(self.n_tweets)]]) / self.n_tweets
+            pv = pv if pv > 0 else 0.001
             denominator = 2.0 * pv * self.n_tweets
             temp = 0.0
             for k in range(self.n_tweets):
                 for l in range(self.n_tweets):
                     temp += (individual.membership_matrix[k][v] * individual.membership_matrix[l][v] * self.d[k][l])
             fitness_value += temp/denominator        
-       
+
         individual.fitness = fitness_value
 
     def selection(self, k):
         """
         :param k: Número de individuos participantes do torneio
         :return: individuo vencedor do torneio
-
         gera uma lista random com K elementos, ordena eles por fitness, e retorna o de melhor aptidao
-        """
-        lista = list()
-        lista = [self.population[randint(0, len(self.population) - 1)] for i in range(k)]
-        lista.sort(key=lambda x : x.fitness)        
-        
+        """        
+        lista = sample(self.population, k)
+        lista.sort(key=lambda x : x.fitness)
+        # print(self.population.index(lista[0]))
         return lista[0]
         
 
@@ -153,27 +141,41 @@ class Problem(object):
         :return:
         """        
         a, b = parents
-        cutt_index = math.ceil(self.n_tweets/2)
+        # cutt_index = math.ceil(self.n_tweets/2)
+        cutt_index = randint(int(self.n_tweets * 0.1), self.n_tweets -1)
             
         top_a = copy.deepcopy(a.membership_matrix[0:cutt_index])
         bottom_a = copy.deepcopy(a.membership_matrix[cutt_index:])
         
         top_b = copy.deepcopy(b.membership_matrix[0:cutt_index])
         bottom_b = copy.deepcopy(b.membership_matrix[cutt_index:])
-        
-        return (Individual(top_a + bottom_b), Individual(top_b + bottom_a ))
+
+        new_membership_matrix_a = top_a + bottom_b
+        new_membership_matrix_b = top_b + bottom_a        
+
+        son_a = Individual(new_membership_matrix_a, self.generation)
+        son_b = Individual(new_membership_matrix_b, self.generation)        
+
+        return (son_a, son_b)
         
 
-    def mutation(self, probabilidade):
+    def mutation(self, individual):
         """
         Com a probabilidade de mutação, altere os cromossomas da nova geração nos locus (posição nos cromossomas).
         :return:
         """
-        pass
+        for row in individual.membership_matrix:
+            # probabilidade aleatória
+            mutation_rate = random()
+            if mutation_rate <= 0.011:                
+                # Efetiva a mutação
+                new_cluster_index = randint(0, self.n_clusters - 1)
+                row[row.index(1)] = 0
+                row[new_cluster_index] = 1 
 
     def complete_population(self, aux_population):
         """
-        verifica e uma populacao esta completa - se ela tem o tamanho correto de cromossomos
+        verifica e uma populacao esta completa - se ela tem o tamanho correto de individuos
         :return: retorna true caso esteja completa. false para contrario
         """
         return len(aux_population) == self.p_size        
@@ -187,20 +189,36 @@ class Problem(object):
         mutacao ()
         :return:
         """        
-        aux_population = list()        
-        
-        self.best_individual = self.population[0]
-        
+        aux_population = list()
         while not self.complete_population(aux_population):
-            parent_a = self.selection(3)
-            parent_b = self.selection(3)            
-            a, b = self.crossover((parent_a, parent_b))
-            #print (a.membership_matrix)
-            #print (b.membership_matrix)
-            aux_population.append(parent_a)
-            aux_population.append(parent_b)
+            # Seleciona os individuos para gerar os novos individuos
+            parent_a = self.selection(5)
+            parent_b = self.selection(5)
+            # Gera dois novos individuos cruzando parent_a e parent_b
+            a, b = self.crossover((parent_a, parent_b))            
+            # Mutação dos novos indivíduos
+            self.mutation(a)            
+            self.mutation(b)
+            self.fitness(a)
+            self.fitness(b)
+            # Adiciona na lista da nova população os novos indivíduos
+            aux_population.append(a)
+            aux_population.append(b)
+        
+        best_from_old = min(self.population, key=lambda ind: ind.fitness)
+        best_from_new = min(aux_population, key=lambda ind: ind.fitness)
+        
+        # Elitismo
+        ## Remove o individuo de maior custo da nova população
+        aux_population.remove(max(aux_population, key=lambda ind: ind.fitness))
+        ## Insere na nova população o melhor individuo da população anterior
+        aux_population.append(best_from_old)
+        
+        if best_from_new.fitness < self.best_individual.fitness:
+            self.best_individual = best_from_new
+            self.iterations = 0
 
-        # Substitui a população antiga pela nova        
-        #print(self.population[5].membership_matrix == aux_population[5].membership_matrix)
+        # Substitui a população antiga pela nova
         self.population = aux_population
         self.iterations += 1
+        self.generation += 1
